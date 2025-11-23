@@ -27,16 +27,10 @@ cd reddit-client
 
 ```
 
-## Run the project
+## 🚀 Run the Project
 
-# With Python
+### Using Python
 
+```bash
 python -m http.server 8000
-
-# With Node.js
-
-npx http-server
-
-# With PHP
-
-php -S localhost:8000
+```
