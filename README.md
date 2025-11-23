@@ -1,8 +1,9 @@
-میخام به انگیسی بنویسی
-🚀 Reddit Client
-A modern and responsive Reddit client with the ability to display multiple subreddits in separate lanes. This project is built with SOLID principles and Clean Code architecture.
+Reddit Client - Project Guide
+📋 Project Overview
+This is a browser-based Reddit client that displays multiple subreddits in separate, customizable lanes.
 
 ![ghtrend demo](assets/reddit.png)✨ Features
+
 🎯 SOLID Architecture - Clean and maintainable code
 
 📱 Responsive Design - Compatible with all devices
