@@ -1,32 +1,33 @@
-Reddit Client - Project Guide
-📋 Project Overview
+# Reddit Client - Project Guide
+
+## 📋 Project Overview
+
 This is a browser-based Reddit client that displays multiple subreddits in separate, customizable lanes.
 
-![ghtrend demo](assets/reddit.png)✨ Features
+![Reddit Client](assets/reddit.png)
 
-🎯 SOLID Architecture - Clean and maintainable code
+## ✨ Features
 
-📱 Responsive Design - Compatible with all devices
+- 🎯 **SOLID Architecture** - Clean and maintainable code
+- 📱 **Responsive Design** - Compatible with all devices
+- 🎨 **Modern UI/UX** - Beautiful and user-friendly design
+- 💾 **Local Storage** - Automatic lane recovery
+- ⚡ **Performance** - Optimized with Debouncing
+- 🔄 **Real-time Validation** - Instant input validation
+- 🌐 **Reddit API Integration** - Direct connection to Reddit
+- 🚫 **Error Handling** - Advanced error management
+- ♿ **Accessibility** - Screen reader compatible
 
-🎨 Modern UI/UX - Beautiful and user-friendly design
+## 🚀 Installation & Run
 
-💾 Local Storage - Automatic lane recovery
-
-⚡ Performance - Optimized with Debouncing
-
-🔄 Real-time Validation - Instant input validation
-
-🌐 Reddit API Integration - Direct connection to Reddit
-
-🚫 Error Handling - Advanced error management
-
-♿ Accessibility - Screen reader compatible
-
-Installation & Run
+```bash
+# Clone the repository
 git clone https://github.com/your-username/reddit-client.git
 cd reddit-client
 
-Run the project
+```
+
+## ## Run the project
 
 # With Python
 
