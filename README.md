@@ -27,7 +27,7 @@ cd reddit-client
 
 ```
 
-## ## Run the project
+## # Run the project
 
 # With Python
 
