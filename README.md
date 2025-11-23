@@ -1,31 +1,40 @@
-eddit Client - Project Guide
-📋 Project Overview
-This is a browser-based Reddit client that displays multiple subreddits in separate, customizable lanes.
+میخام به انگیسی بنویسی
+🚀 Reddit Client
+A modern and responsive Reddit client with the ability to display multiple subreddits in separate lanes. This project is built with SOLID principles and Clean Code architecture.
 
-🚀 Features
-Multiple Subreddit Display: Show posts from different subreddits in separate lanes
+![ghtrend demo](assets/reddit.png)✨ Features
+🎯 SOLID Architecture - Clean and maintainable code
 
-Add New Subreddits: Add new subreddits by entering their names
+📱 Responsive Design - Compatible with all devices
 
-Subreddit Validation: Verify subreddit existence before display
+🎨 Modern UI/UX - Beautiful and user-friendly design
 
-Local Storage: Save user's custom lanes in localStorage
+💾 Local Storage - Automatic lane recovery
 
-Loading States: Display loading indicators while fetching data
+⚡ Performance - Optimized with Debouncing
 
-Error Handling: Show error messages for invalid subreddits or API issues
+🔄 Real-time Validation - Instant input validation
 
-Responsive UI: Design adapts to different screen sizes
+🌐 Reddit API Integration - Direct connection to Reddit
 
-🛠️ Technologies Used
-HTML5: Page structure
+🚫 Error Handling - Advanced error management
 
-CSS3: Styling and responsive design
+♿ Accessibility - Screen reader compatible
 
-JavaScript: Application logic and DOM manipulation
+Installation & Run
+git clone https://github.com/your-username/reddit-client.git
+cd reddit-client
 
-🔧 Setup
-git clone [repository-url]
-Reddit JSON API: Fetch post data
+Run the project
 
-LocalStorage: User data persistence
+# With Python
+
+python -m http.server 8000
+
+# With Node.js
+
+npx http-server
+
+# With PHP
+
+php -S localhost:8000
