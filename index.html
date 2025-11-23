@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reddit Client - کلاینت رددیت</title>
+    <meta
+      name="description"
+      content="یک کلاینت Reddit با قابلیت نمایش چندین سابردیت در لاین‌های جداگانه"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- هدر برنامه -->
+      <header class="app-header">
+        <div class="header-content">
+          <div class="logo-section">
+            <h1 class="app-title">
+              <span class="reddit-icon">📱</span>
+              Reddit Client
+            </h1>
+            <p class="app-subtitle">مشاهده چندین سابردیت در یک نگاه</p>
+          </div>
+
+          <div class="controls-section">
+            <!-- گروه ورودی -->
+            <div class="input-group">
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  id="subredditInput"
+                  placeholder="نام سابردیت را وارد کنید (مثال: javascript)"
+                  maxlength="21"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+                <div class="input-hint">
+                  فقط حروف انگلیسی، اعداد و _ مجاز است
+                </div>
+              </div>
+              <button id="addLaneBtn" class="add-btn" disabled>
+                <span class="btn-icon">➕</span>
+                اضافه کردن لاین
+              </button>
+            </div>
+
+            <!-- دکمه‌های اکشن -->
+            <div class="action-buttons">
+              <button id="clearAllBtn" class="clear-all-btn">
+                <span class="btn-icon">🗑️</span>
+                پاک کردن همه
+              </button>
+
+              <!-- برای حالت توسعه -->
+              <button
+                id="devToolsBtn"
+                class="dev-tools-btn"
+                style="display: none"
+              >
+                <span class="btn-icon">🔧</span>
+                ابزار توسعه
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- محتوای اصلی -->
+      <main class="app-main">
+        <div class="container">
+          <!-- وضعیت برنامه -->
+          <div id="appStatus" class="app-status" style="display: none">
+            <div class="status-message">
+              <span class="status-icon">⏳</span>
+              <span class="status-text">در حال بارگذاری...</span>
+            </div>
+          </div>
+
+          <!-- کانتینر لاین‌ها -->
+          <div id="lanesContainer" class="lanes-container">
+            <!-- حالت خالی -->
+            <div id="emptyState" class="empty-state">
+              <div class="empty-icon">📭</div>
+              <h2>هنوز سابردیتی اضافه نکرده‌اید</h2>
+              <p>برای شروع، نام یک سابردیت را در باال وارد کنید</p>
+              <div class="suggestions">
+                <span>پیشنهادها: </span>
+                <button class="suggestion-btn" data-subreddit="javascript">
+                  javascript
+                </button>
+                <button class="suggestion-btn" data-subreddit="reactjs">
+                  reactjs
+                </button>
+                <button class="suggestion-btn" data-subreddit="webdev">
+                  webdev
+                </button>
+                <button class="suggestion-btn" data-subreddit="ProgrammerHumor">
+                  ProgrammerHumor
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- فوتر -->
+          <footer class="app-footer">
+            <div class="footer-content">
+              <p>
+                ساخته شده با
+                <span class="heart">❤️</span>
+                و
+                <a
+                  href="https://www.reddit.com/dev/api"
+                  target="_blank"
+                  rel="noopener"
+                  >Reddit API</a
+                >
+              </p>
+              <div class="footer-links">
+                <button id="refreshAllBtn" class="footer-btn">
+                  🔄 بروزرسانی همه
+                </button>
+                <button id="exportBtn" class="footer-btn">
+                  💾 ذخیره پیکربندی
+                </button>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </main>
+
+      <!-- مدال‌ها و toast ها -->
+      <div id="modalContainer" class="modal-container"></div>
+      <div id="toastContainer" class="toast-container"></div>
+
+      <!-- اسکریپت‌های برنامه -->
+      <script type="module" src="js/main.js"></script>
+
+      <!-- اسکریپت برای پیشنهادها -->
+      <script>
+        // اسکریپت ساده برای دکمه‌های پیشنهاد
+        document.addEventListener("DOMContentLoaded", function () {
+          const suggestionBtns = document.querySelectorAll(".suggestion-btn");
+          const subredditInput = document.getElementById("subredditInput");
+
+          suggestionBtns.forEach((btn) => {
+            btn.addEventListener("click", function () {
+              const subreddit = this.getAttribute("data-subreddit");
+              if (subredditInput) {
+                subredditInput.value = subreddit;
+                subredditInput.focus();
+
+                // تریگر event input برای اعتبارسنجی
+                const event = new Event("input", { bubbles: true });
+                subredditInput.dispatchEvent(event);
+              }
+            });
+          });
+
+          // نمایش/پنهان کردن دکمه ابزار توسعه در حالت dev
+          if (
+            window.location.hostname === "localhost" ||
+            window.location.hostname === "127.0.0.1"
+          ) {
+            const devToolsBtn = document.getElementById("devToolsBtn");
+            if (devToolsBtn) {
+              devToolsBtn.style.display = "inline-block";
+              devToolsBtn.addEventListener("click", function () {
+                if (window.redditClient) {
+                  console.log("App Stats:", window.redditClient.getStats());
+                }
+              });
+            }
+          }
+        });
+      </script>
+    </div>
+  </body>
+</html>
