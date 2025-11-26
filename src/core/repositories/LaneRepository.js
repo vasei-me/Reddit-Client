@@ -169,4 +169,14 @@ export class LaneRepository extends ILaneRepository {
       return 0;
     }
   }
+
+  async getById(laneId) {
+    try {
+      const lanes = await this.getAll();
+      return lanes.find((lane) => lane.id === laneId);
+    } catch (error) {
+      console.error("Error getting lane by ID:", error);
+      return null;
+    }
+  }
 }

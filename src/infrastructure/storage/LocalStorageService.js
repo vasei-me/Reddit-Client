@@ -38,7 +38,9 @@ export class LocalStorageService extends IStorageService {
     }
 
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      const stringValue =
+        typeof value === "string" ? value : JSON.stringify(value);
+      localStorage.setItem(key, stringValue);
       return true;
     } catch (error) {
       console.error(`Error setting item ${key} in localStorage:`, error);

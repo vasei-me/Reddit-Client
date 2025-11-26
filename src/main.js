@@ -147,6 +147,7 @@ class RedditClientApp {
       this.currentView = this.dashboardView;
 
       this.setupStateSubscriptions();
+      this.setupInfiniteScroll();
 
       console.log("✅ UI initialized successfully");
     } catch (error) {
@@ -379,6 +380,206 @@ class RedditClientApp {
       this.postState.setSelectedPost(post);
       this.postState.markAsViewed(post.id);
     }
+  }
+
+  toggleDarkMode() {
+    const htmlElement = document.documentElement;
+    const isDark = htmlElement.classList.contains("dark-mode");
+
+    if (isDark) {
+      htmlElement.classList.remove("dark-mode");
+      localStorage.setItem("darkMode", "false");
+      this.showNotification("☀️ Light mode enabled", "info", 1500);
+    } else {
+      htmlElement.classList.add("dark-mode");
+      localStorage.setItem("darkMode", "true");
+      this.showNotification("🌙 Dark mode enabled", "info", 1500);
+    }
+  }
+
+  toggleThumbnails() {
+    const show = !this.appState.showThumbnails;
+    this.appState.showThumbnails = show;
+
+    const postsContainer = document.querySelectorAll(".post-thumbnail");
+    postsContainer.forEach((container) => {
+      container.style.display = show ? "block" : "none";
+    });
+
+    localStorage.setItem("showThumbnails", show);
+    this.showNotification(
+      show ? "🖼️ Thumbnails enabled" : "🖼️ Thumbnails disabled",
+      "info",
+      1500
+    );
+  }
+
+  searchPosts() {
+    const searchInput = document.querySelector('input[placeholder*="Search"]');
+    if (!searchInput) return;
+
+    const query = searchInput.value.toLowerCase().trim();
+    const posts = document.querySelectorAll(".post");
+    let visibleCount = 0;
+
+    posts.forEach((post) => {
+      const title =
+        post.querySelector(".post-title")?.textContent.toLowerCase() || "";
+      const matches = title.includes(query);
+
+      post.style.display = matches || !query ? "flex" : "none";
+      if (matches || !query) visibleCount++;
+    });
+
+    if (query && visibleCount === 0) {
+      this.showNotification(
+        `🔍 No posts found for "${query}"`,
+        "warning",
+        2000
+      );
+    }
+  }
+
+  setSortOrder() {
+    const sortSelect = document.querySelector('select[title="Sort"]');
+    if (!sortSelect) return;
+
+    const sortBy = sortSelect.value;
+    const lanesContainers = document.querySelectorAll(".posts-container");
+
+    lanesContainers.forEach((container) => {
+      const posts = Array.from(container.querySelectorAll(".post"));
+
+      posts.sort((a, b) => {
+        const scoreA = parseInt(a.textContent.match(/👍\s*(\d+)/)?.[1] || 0);
+        const scoreB = parseInt(b.textContent.match(/👍\s*(\d+)/)?.[1] || 0);
+        const commentsA = parseInt(a.textContent.match(/💬\s*(\d+)/)?.[1] || 0);
+        const commentsB = parseInt(b.textContent.match(/💬\s*(\d+)/)?.[1] || 0);
+
+        switch (sortBy) {
+          case "hot":
+            return scoreB - scoreA;
+          case "new":
+            return 0;
+          case "top":
+            return scoreB + commentsB - (scoreA + commentsA);
+          case "comments":
+            return commentsB - commentsA;
+          default:
+            return 0;
+        }
+      });
+
+      posts.forEach((post) => container.appendChild(post));
+    });
+
+    const sortLabels = {
+      hot: "Hot",
+      new: "New",
+      top: "Top",
+      comments: "Comments",
+    };
+    this.showNotification(`📊 Sorted by ${sortLabels[sortBy]}`, "info", 1500);
+  }
+
+  toggleFavorite(postId) {
+    const post = document.querySelector(`[data-post-id="${postId}"]`);
+    if (!post) return;
+
+    const isFavorited = post.classList.contains("favorited");
+
+    if (isFavorited) {
+      post.classList.remove("favorited");
+      this.postState.removeFavorite(postId);
+      this.showNotification("Removed from favorites", "info", 1500);
+    } else {
+      post.classList.add("favorited");
+      this.postState.addFavorite(postId);
+      this.showNotification("⭐ Added to favorites", "success", 1500);
+    }
+  }
+
+  toggleBookmark(postId) {
+    const post = document.querySelector(`[data-post-id="${postId}"]`);
+    if (!post) return;
+
+    const isBookmarked = post.classList.contains("bookmarked");
+
+    if (isBookmarked) {
+      post.classList.remove("bookmarked");
+      this.postState.removeBookmark(postId);
+      this.showNotification("Removed from bookmarks", "info", 1500);
+    } else {
+      post.classList.add("bookmarked");
+      this.postState.addBookmark(postId);
+      this.showNotification("📌 Bookmarked for later", "success", 1500);
+    }
+  }
+
+  sharePost(postId, title = "") {
+    const post = document.querySelector(`[data-post-id="${postId}"]`);
+    if (!post) return;
+
+    const postUrl = post.querySelector("a.post-title")?.href || "";
+
+    if (navigator.share) {
+      navigator
+        .share({
+          title: title || "Check out this post",
+          url: postUrl,
+        })
+        .catch((err) => console.log("Share failed:", err));
+    } else {
+      // Fallback: Copy to clipboard
+      navigator.clipboard
+        .writeText(postUrl)
+        .then(() => {
+          this.showNotification("🔗 Link copied to clipboard", "success", 2000);
+        })
+        .catch(() => {
+          this.showNotification("Failed to copy link", "error", 2000);
+        });
+    }
+  }
+
+  setupInfiniteScroll() {
+    const container = document.querySelector(".dashboard");
+    if (!container) return;
+
+    let isLoading = false;
+    let currentPage = 1;
+
+    const scrollHandler = () => {
+      if (isLoading) return;
+
+      const scrollPercentage =
+        (window.scrollY + window.innerHeight) /
+        document.documentElement.scrollHeight;
+
+      // Trigger when user is 80% down the page
+      if (scrollPercentage > 0.8) {
+        isLoading = true;
+        currentPage++;
+
+        // Simulate loading more posts by refreshing visible lanes
+        const lanes = this.appState.lanes?.value || [];
+        if (lanes.length > 0) {
+          console.log(`📄 Loading page ${currentPage}...`);
+          // In a real Reddit client, this would fetch the next page of posts
+          // For now, we just show a notification
+          this.showNotification("📄 Loading more posts...", "info", 1000);
+        }
+
+        setTimeout(() => {
+          isLoading = false;
+        }, 1000);
+      }
+    };
+
+    window.addEventListener("scroll", scrollHandler);
+
+    // Store handler for cleanup
+    this._scrollHandler = scrollHandler;
   }
 
   setupAutoRefresh() {
@@ -636,6 +837,11 @@ class RedditClientApp {
 
   destroy() {
     this.stopAutoRefresh();
+
+    // Remove scroll event listener for infinite scroll
+    if (this._scrollHandler) {
+      window.removeEventListener("scroll", this._scrollHandler);
+    }
 
     if (this.dashboardView) {
       this.dashboardView.destroy();

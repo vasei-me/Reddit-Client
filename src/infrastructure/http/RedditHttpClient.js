@@ -2,77 +2,90 @@
 export class RedditHttpClient {
   constructor() {
     this.proxies = [
-      "https://api.allorigins.win/raw?url=",
       "https://corsproxy.io/?",
+      "https://api.allorigins.win/raw?url=",
       "https://cors.bridged.cc/",
-      "https://jsonp.afeld.me/?url=",
     ];
     this.currentProxyIndex = 0;
+    this.timeout = 10000; // 10 second timeout
   }
 
   async get(url) {
     console.log(`🔗 Fetching: ${url}`);
 
-    // حذف هرگونه پروکسی قبلی از URL
     const cleanUrl = url.replace("https://cors-anywhere.herokuapp.com/", "");
 
     for (let i = 0; i < this.proxies.length; i++) {
-      try {
-        const proxyIndex = (this.currentProxyIndex + i) % this.proxies.length;
-        const proxyUrl =
-          this.proxies[proxyIndex] + encodeURIComponent(cleanUrl);
+      const proxyIndex = (this.currentProxyIndex + i) % this.proxies.length;
+      const proxy = this.proxies[proxyIndex];
 
+      try {
+        const proxyUrl = proxy + encodeURIComponent(cleanUrl);
         console.log(
-          `🔄 Trying proxy ${proxyIndex + 1}: ${this.proxies[proxyIndex]}`
+          `🔄 Trying proxy ${proxyIndex + 1}/${this.proxies.length}: ${proxy}`
         );
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
         const response = await fetch(proxyUrl, {
-          method: "GET",
+          signal: controller.signal,
           headers: {
             Accept: "application/json",
-            "User-Agent": "RedditDashboard/1.0",
           },
         });
+
+        clearTimeout(timeoutId);
 
         console.log(`📡 Response status: ${response.status}`);
 
         if (response.ok) {
           const text = await response.text();
-          console.log(
-            `✅ Proxy ${proxyIndex + 1} successful, response length: ${
-              text.length
-            }`
-          );
+          console.log(`✅ Proxy ${proxyIndex + 1} successful`);
 
-          // بررسی اینکه پاسخ JSON معتبر است
           if (text.trim().startsWith("{") || text.trim().startsWith("[")) {
-            const data = JSON.parse(text);
-            this.currentProxyIndex = proxyIndex;
-            return data;
+            try {
+              const data = JSON.parse(text);
+              this.currentProxyIndex = proxyIndex;
+              return data;
+            } catch (parseError) {
+              console.warn(
+                `❌ Invalid JSON from proxy ${proxyIndex + 1}:`,
+                parseError.message
+              );
+              continue;
+            }
           } else {
             console.warn(
-              `❌ Invalid JSON response from proxy ${proxyIndex + 1}`
+              `❌ Invalid response format from proxy ${proxyIndex + 1}`
             );
             continue;
           }
+        } else if (response.status === 404) {
+          throw new Error("404 - Subreddit not found");
+        } else if (response.status === 403) {
+          throw new Error("403 - Access forbidden");
+        } else if (response.status === 429) {
+          throw new Error("429 - Rate limited");
         } else {
           console.warn(
-            `❌ Proxy ${proxyIndex + 1} failed with status: ${response.status}`
+            `⚠️ Proxy ${proxyIndex + 1} returned status ${response.status}`
           );
         }
       } catch (error) {
-        console.warn(`❌ Proxy ${proxyIndex + 1} error:`, error.message);
-        continue;
+        if (error.name === "AbortError") {
+          console.warn(`❌ Proxy ${proxyIndex + 1} timeout`);
+        } else if (error.message.startsWith("40")) {
+          // HTTP error - throw immediately
+          throw error;
+        } else {
+          console.warn(`❌ Proxy ${proxyIndex + 1} failed:`, error.message);
+        }
       }
     }
 
     throw new Error(
-      "All CORS proxies failed. Please check your internet connection."
+      "All proxies failed. Please check your internet connection and try again."
     );
-  }
-
-  _handleError(error) {
-    console.error("HTTP Client Error:", error);
-    throw error;
   }
 }

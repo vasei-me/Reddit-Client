@@ -5,6 +5,7 @@ export class PostState {
     this.selectedPost = new Observable(null);
     this.viewedPosts = new Observable(new Set());
     this.favoritePosts = new Observable(new Set());
+    this.bookmarkedPosts = new Observable(new Set());
     this.hiddenPosts = new Observable(new Set());
   }
 
@@ -48,6 +49,18 @@ export class PostState {
     this.favoritePosts.value = favorites;
   }
 
+  addFavorite(postId) {
+    const favorites = new Set(this.favoritePosts.value);
+    favorites.add(postId);
+    this.favoritePosts.value = favorites;
+  }
+
+  removeFavorite(postId) {
+    const favorites = new Set(this.favoritePosts.value);
+    favorites.delete(postId);
+    this.favoritePosts.value = favorites;
+  }
+
   isFavorite(postId) {
     return this.favoritePosts.value.has(postId);
   }
@@ -58,6 +71,43 @@ export class PostState {
 
   clearFavorites() {
     this.favoritePosts.value = new Set();
+  }
+
+  // Bookmarked posts
+  toggleBookmark(postId) {
+    const bookmarked = new Set(this.bookmarkedPosts.value);
+
+    if (bookmarked.has(postId)) {
+      bookmarked.delete(postId);
+    } else {
+      bookmarked.add(postId);
+    }
+
+    this.bookmarkedPosts.value = bookmarked;
+  }
+
+  addBookmark(postId) {
+    const bookmarked = new Set(this.bookmarkedPosts.value);
+    bookmarked.add(postId);
+    this.bookmarkedPosts.value = bookmarked;
+  }
+
+  removeBookmark(postId) {
+    const bookmarked = new Set(this.bookmarkedPosts.value);
+    bookmarked.delete(postId);
+    this.bookmarkedPosts.value = bookmarked;
+  }
+
+  isBookmarked(postId) {
+    return this.bookmarkedPosts.value.has(postId);
+  }
+
+  getBookmarkedPosts() {
+    return Array.from(this.bookmarkedPosts.value);
+  }
+
+  clearBookmarks() {
+    this.bookmarkedPosts.value = new Set();
   }
 
   // Hidden posts
@@ -95,6 +145,7 @@ export class PostState {
     return {
       viewedPosts: Array.from(this.viewedPosts.value),
       favoritePosts: Array.from(this.favoritePosts.value),
+      bookmarkedPosts: Array.from(this.bookmarkedPosts.value),
       hiddenPosts: Array.from(this.hiddenPosts.value),
     };
   }
@@ -106,6 +157,9 @@ export class PostState {
     if (data.favoritePosts) {
       this.favoritePosts.value = new Set(data.favoritePosts);
     }
+    if (data.bookmarkedPosts) {
+      this.bookmarkedPosts.value = new Set(data.bookmarkedPosts);
+    }
     if (data.hiddenPosts) {
       this.hiddenPosts.value = new Set(data.hiddenPosts);
     }
@@ -115,6 +169,7 @@ export class PostState {
     this.selectedPost = null;
     this.viewedPosts = null;
     this.favoritePosts = null;
+    this.bookmarkedPosts = null;
     this.hiddenPosts = null;
   }
 }
